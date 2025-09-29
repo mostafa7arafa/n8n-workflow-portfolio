@@ -29,5 +29,4 @@ To run this workflow, you will need to configure the following:
 
 ## 📊 Workflow Overview
 
-![Workflow Overview](image_5ff830.png)
 <img width="1412" height="594" alt="image" src="https://github.com/user-attachments/assets/a73d9bc0-6c5a-4308-8c26-63657fc614c4" />
