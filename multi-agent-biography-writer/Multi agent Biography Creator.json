@@ -1,0 +1,373 @@
+{
+  "name": "Biography creator",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1808,
+        80
+      ],
+      "id": "d4a1b2ac-b961-4cd4-bb8a-d5793f495c61",
+      "name": "When chat message received",
+      "webhookId": "fa75d7bd-88d7-4f9e-8bf1-607660dc9f6b"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=## Biography Writer Node\n\nYour role is to create a **creative biography** based on the basic information provided by the user.  \n\nRequirements:  \n1. Write a **title** for the biography.  \n2. Write the **biography text** with creativity, clarity, and flow.  \n3. Output must be in **valid JSON format** with the following keys:  \n   - \"title\" → the biography title  \n   - \"biography\" → the biography text  \n\nExample output format:\n{\n  \"title\": \"The Visionary Innovator\",\n  \"biography\": \"John Doe, born in a small town, grew up with a passion for technology...\"\n}\n\nTone: Natural, engaging, and professional.  \nDo not include explanations or commentary outside of the JSON.  \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1552,
+        80
+      ],
+      "id": "30fcbf31-3e28-4b5d-90a1-a6af3f253e3d",
+      "name": "Biography writer"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "281f7794-d718-4432-9a39-1a4b936a00a7",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -800,
+        80
+      ],
+      "id": "aa35552b-e489-40f2-b471-856318aa9bf3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=biography generated: {{ $json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are the **Biography Evaluator Agent**.  \nYour role is to carefully evaluate any biography provided to you.  \n\nYour evaluation criteria are:  \n1. **Creativity** – Does the biography feel original, vivid, and compelling?  \n2. **Structure** – Is it well-organized with a clear flow (beginning, middle, end)?  \n3. **Engagement** – Does it capture attention, feel relatable, and keep the reader interested?  \n4. **Headings** – Does the biography include clear, meaningful headings to separate sections?  \n5. **Extended Content** – Is the biography sufficiently detailed, not too short, and enriched with creative depth (to be useful for storing and analyzing later in Google Sheets)?  \n\nYour workflow:  \n- Step 1: Review the biography against the above five criteria.  \n- Step 2: If the biography meets all standards, confirm with a clear **\"Finished – Biography Approved\"**.  \n- Step 3: If the biography fails in any of the areas, **do not approve it**. Instead, pass it directly to the **Optimizer AI Agent**, highlighting what needs improvement and why.  \n\nTone: Be constructive, precise, and professional.  \n\nYour only outputs must be either:  \n- Approval message (if ready).  \n- Or, a short, actionable review passed along to the Optimizer AI Agent (if not ready).  "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -592,
+        80
+      ],
+      "id": "00aeafe4-58b7-4adb-a7f0-a9c3bbf6c1b1",
+      "name": "Evaluator"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2ad343dd-d886-4e38-a3ef-e8956b910bc9",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Finished – Biography Approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        80
+      ],
+      "id": "f465de1e-4d7b-44ff-bd1e-bd71b43a5325",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "folderId": "1pSRU7kujZR2JzVhDwxoPxLxDqdXSmofE",
+        "title": "={{ $('Information Extractor').item.json.output.Title }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        48,
+        0
+      ],
+      "id": "86fcb45d-b3a1-4979-a7c4-5b8dc765a2a1",
+      "name": "Create a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "o3Exi6PB4VQP3Kw1",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are the **Optimizer AI Agent**.  \nYour role is to take biographies flagged by the Biography Evaluator Agent as needing improvement.  \n\nYour mission is to transform the biography into a polished version that fully satisfies these requirements:  \n1. **Creativity** – Enrich the text with originality, vivid descriptions, and a unique voice.  \n2. **Structure** – Ensure a logical flow with a clear beginning, middle, and end.  \n3. **Engagement** – Rewrite or expand sections to be more captivating, relatable, and memorable.  \n4. **Headings** – Add clear, meaningful section headings to organize the content.  \n5. **Extended Content** – Expand the biography with sufficient detail and creativity so it is long, substantial, and useful for storage/analysis in Google Sheets.  \n\nYour workflow:  \n- Step 1: Review the feedback provided by the Biography Evaluator Agent.  \n- Step 2: Rewrite, expand, or restructure the biography to address all weaknesses.  \n- Step 3: Deliver the final biography with **headings, extended sections, and creative depth**.  \n\nTone: Inspiring, professional, and engaging.  \n\nOutput: Only deliver the **final optimized biography**. Do not explain your changes.  \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        224
+      ],
+      "id": "c1684c87-f470-4edf-b119-32196c1d38a4",
+      "name": "Optimizer"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1008,
+        352
+      ],
+      "id": "b21bcf25-a714-4585-b3ef-73fa98601329",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "hlhZnOWmlw6SLbRV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "object": "=text",
+              "action": "insert",
+              "text": "={{ $('Edit Fields').item.json.output }}",
+              "index": 0
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "2f8cef58-ace0-4162-b634-0241511b188a",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "o3Exi6PB4VQP3Kw1",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Title",
+              "description": "title of the biography",
+              "required": true
+            },
+            {
+              "name": "Biography",
+              "description": "the body of the biography ",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -1168,
+        80
+      ],
+      "id": "f5146e2d-7c87-488a-8103-0ca61370e4b3",
+      "name": "Information Extractor"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Biography writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Biography writer": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Evaluator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluator": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Optimizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Optimizer": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Biography writer",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Evaluator",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Optimizer",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "05b7ee6a-7099-494b-ba91-f893fe73061a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d439f3ae536d0c8dd0587c6939d88d457c04d19cc3a201f64ba2ed92a2b9a6ef"
+  },
+  "id": "Jmo3l2MrBYwQ9PZ8",
+  "tags": [
+    {
+      "createdAt": "2025-09-17T22:20:30.271Z",
+      "updatedAt": "2025-09-17T22:20:30.271Z",
+      "id": "hftJI3b6ZK8waaYL",
+      "name": "Workflow"
+    }
+  ]
+}
