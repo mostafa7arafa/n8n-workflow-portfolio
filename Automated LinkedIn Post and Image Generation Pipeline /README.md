@@ -36,7 +36,5 @@ To run this workflow, you will need to configure the following credentials:
 3.  **OpenAI API Key:** Used for both the visual prompt agent and for authenticating the DALL-E HTTP request.
 4.  **Gmail Credentials (OAuth2):** For sending the final email with the attachment.
 
-**IMPORTANT:** Never commit your secret keys or credentials directly to your GitHub repository.
-
 ## 📊 Workflow Overview
 <img width="1502" height="427" alt="image" src="https://github.com/user-attachments/assets/e27b4d3b-d86e-40d4-9a42-7189e2f946a8" />
