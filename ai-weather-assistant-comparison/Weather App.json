@@ -1,0 +1,391 @@
+{
+  "name": "Weather App",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        864,
+        240
+      ],
+      "id": "8d364d5e-2f9e-4375-b541-990ab0aaaca9",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "24YfSHK5VAkSruOL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.chatInput }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Whether",
+              "description": "When you are asked about the whether "
+            },
+            {
+              "category": "Other",
+              "description": "other"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0de4f1da-d376-4bc9-8307-2a89fb1bd258",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        208
+      ],
+      "id": "f95c3829-8276-45a7-a595-860e4c87025a",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "24YfSHK5VAkSruOL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        480,
+        224
+      ],
+      "id": "50f53385-b288-4da4-b9d0-272e93bd843d",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        -16
+      ],
+      "id": "f8f7f32a-e7e0-4ef5-a6eb-550d1eb1bdd2",
+      "name": "When chat message received",
+      "webhookId": "d72261da-5144-411b-997b-4194020d1789"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        192
+      ],
+      "id": "2ab153cc-6290-48a6-9f1d-b3d5232887c1",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "24YfSHK5VAkSruOL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "this tool takes the city then returns the temperature insights.",
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $fromAI(\"city\") }}"
+            },
+            {
+              "name": "appid",
+              "value": "xxxxxxxxxxxxxxxxxxxxxxxxxx"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -464,
+        192
+      ],
+      "id": "a388b7e8-8fe9-49c8-a846-b21260ba5e22",
+      "name": "get_weather"
+    },
+    {
+      "parameters": {
+        "content": "## AI Workflow",
+        "height": 512,
+        "width": 1568
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -80
+      ],
+      "id": "f5de0165-6075-49c9-950a-1189d25b2487",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent",
+        "height": 512,
+        "width": 656,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -80
+      ],
+      "id": "3189207a-db46-46c3-a8e0-f28db51274b0",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a Weather Assistant AI.\nWhen the user asks you about the weather in a specific city, follow these steps:\n\nExtract the city name from the user’s request.\n\nCall the tool get_weather by passing the extracted city as input.\n\nWait for the tool’s response.\n\nUse the returned insights to generate a clear and user-friendly reply about the weather in that city.\n\nMention temperature, conditions (sunny, cloudy, rainy, etc.), and any other useful details from the tool response.\n\nDo not guess or invent weather information. If the tool fails to return data, politely tell the user you couldn’t retrieve the weather."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -624,
+        -16
+      ],
+      "id": "32110e10-7b1b-4d91-90e9-1c32378c2592",
+      "name": "Weather AI Agent"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.output.City }}"
+            },
+            {
+              "name": "appid",
+              "value": "xxxxxxxxxxxxxxxxxxxxxxxxxx"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        864,
+        16
+      ],
+      "id": "db08565b-4580-4ba1-ae11-c19732adf5ad",
+      "name": "Get Weather"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.chatInput }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "City",
+              "description": "the name of the city to be extracted",
+              "required": true
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Your objective is to extract the city name from the question you are asked about the whether"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        16
+      ],
+      "id": "da6b4148-f96b-4fc5-a0c2-877c4d0ad3b6",
+      "name": "City Extractor"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=City: {{ $json.name }}, {{ $json.sys.country }}\ntemperature : {{ $json.main.temp }}\nwind speed: {{ $json.wind.speed }}\nclouds: {{ $json.clouds.all }}\n",
+        "options": {
+          "systemMessage": "=You are **Weather Insights AI**.  \nYour job is to take structured weather data (temperature, cloud coverage, wind speed/direction, and city name) and generate a clear, friendly message to the user with insights about the weather.  \n\nRules:  \n- Mention the **city name** at the start.  \n- Report the **temperature** in °C (or °F if specified by the user).  \n- Describe the **clouds** in natural language (e.g., \"clear skies,\" \"partly cloudy,\" \"overcast\").  \n- Include **wind details** (speed and direction) in simple, easy-to-understand terms.  \n- Keep the message **short, conversational, and user-friendly**.  \n- Optionally add a practical takeaway (e.g., “Great day for a walk” or “You might need an umbrella”).  \n- Do not output raw data — always phrase it as a natural message.  \n\nFormat of output:  \n<weather message to user>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        16
+      ],
+      "id": "0cf50706-70e1-4561-a0a0-1366010d128d",
+      "name": "Weather Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "City Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Weather Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "City Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Weather AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Weather AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "Weather AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weather": {
+      "main": [
+        [
+          {
+            "node": "Weather Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "City Extractor": {
+      "main": [
+        [
+          {
+            "node": "Get Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "07274719-f70b-4c48-9b3a-6f1e478870cc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d439f3ae536d0c8dd0587c6939d88d457c04d19cc3a201f64ba2ed92a2b9a6ef"
+  },
+  "id": "GORzPCfFI2Uesl2h",
+  "tags": [
+    {
+      "createdAt": "2025-09-17T22:39:21.107Z",
+      "updatedAt": "2025-09-17T22:39:21.107Z",
+      "id": "Vpe6axmMTtvpmq4l",
+      "name": "AI Agent"
+    },
+    {
+      "createdAt": "2025-09-17T22:20:30.271Z",
+      "updatedAt": "2025-09-17T22:20:30.271Z",
+      "id": "hftJI3b6ZK8waaYL",
+      "name": "Workflow"
+    }
+  ]
+}
