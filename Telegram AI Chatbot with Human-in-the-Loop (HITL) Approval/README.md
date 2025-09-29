@@ -37,8 +37,6 @@ To run this workflow, you will need to configure the following:
 4.  **Google Gemini (PaLM) API Key:** For the Optimizer and Approval Check models.
 5.  **Supervisor Chat ID:** You must manually set the supervisor's Telegram Chat ID in the "Feedback" Telegram node to ensure approval requests are sent to the correct person.
 
-**IMPORTANT:** Never commit your secret keys or credentials directly to your GitHub repository.
-
 ## 📊 Workflow Overview
 
 <img width="1465" height="456" alt="image" src="https://github.com/user-attachments/assets/d31642eb-aca3-4193-8095-f52441bbb7d1" />
