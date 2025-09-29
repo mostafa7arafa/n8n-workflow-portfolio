@@ -1,0 +1,517 @@
+{
+  "name": "Invoice reader (pdf)",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -32
+      ],
+      "id": "c34d929b-c6ae-4f0c-a596-93c10aa9e42e",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Name",
+              "description": "Name of the beneficiary/recipient.",
+              "required": true
+            },
+            {
+              "name": "Date",
+              "type": "date",
+              "description": "Invoice date in `YYYY-MM-DD` format if possible. ",
+              "required": true
+            },
+            {
+              "name": "Total Amount",
+              "type": "number",
+              "description": "Numeric value only, without currency symbols.",
+              "required": true
+            },
+            {
+              "name": "Type of Transaction",
+              "description": "Clearly state if it was *cash in hand* or *bank transfer*.  \n    - If *bank transfer*, mention the bank name as part of the value (e.g., `\"Bank Transfer - HSBC\"`).  ",
+              "required": true
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        -32
+      ],
+      "id": "6b2eac47-602d-4f51-b294-ac71a56c4bc7",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        368,
+        144
+      ],
+      "id": "7c0e9e73-39a6-4ad7-a457-d7c323c924a2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "24YfSHK5VAkSruOL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1x2btApWyY0bJDpD6GsC2TTVrcr8VC9zW80xYkGOaCAc",
+          "mode": "list",
+          "cachedResultName": "Invoice Reader (tutorial)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x2btApWyY0bJDpD6GsC2TTVrcr8VC9zW80xYkGOaCAc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x2btApWyY0bJDpD6GsC2TTVrcr8VC9zW80xYkGOaCAc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.output.Name }}",
+            "Date": "={{ $json.output.Date }}",
+            "Total Amount": "={{ $json.output['Total Amount'] }}",
+            "Type of Transaction": "={{ $json.output['Type of Transaction'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Amount",
+              "displayName": "Total Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type of Transaction",
+              "displayName": "Type of Transaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        752,
+        -32
+      ],
+      "id": "f9d1ecef-ea2e-4790-adff-18740d217965",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3tcdR933OfkAIkAw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=name : {{ $json.Name }}\nDate:{{ $json.Date }}\nTotal amount in usd:{{ $json['Total Amount'] }}\nType of transaction: {{ $json['Type of Transaction'] }}"
+            },
+            {
+              "content": "=You are **Invoice Email Assistant**.  \nYour name is billing bot, your task is to take structured data provided by the user about a received invoice (e.g., invoice number, date, amount, beneficiary, payment method, etc.) and craft a professional email addressed to the billing team.  \n\nRules:  \n- Output must always be split into two parts:  \n  1. **Subject** = A clear short, concise subject line for the billing team, the subject should include the name only of the benificary.  \n  2. **Email Body** = A polite, professional, and well-formatted message.  \n- Keep the tone formal but approachable.  \n- Ensure the email includes:  \n  - Reference to the received invoice.  \n  - Key invoice details (date, amount, beneficiary, etc.).  \n  - A polite note asking for confirmation or processing.  \n- Do not add explanations outside of the subject and body.  \n\nFormat of output:  \nSubject: <subject line here>\n\nEmail Body:\n<email content here>",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        960,
+        -32
+      ],
+      "id": "e873036a-21e4-4976-ab70-910cb58a9e6b",
+      "name": "Message a model to create email",
+      "credentials": {
+        "openAiApi": {
+          "id": "hlhZnOWmlw6SLbRV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "mostafa.1.arafa@gmail.com",
+        "subject": "={{ $json.message.content.Subject }}",
+        "emailType": "text",
+        "message": "={{ $json.message.content['Email Body'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1312,
+        -32
+      ],
+      "id": "1ef7df07-9ce8-44ec-8ed2-820a5c65ab00",
+      "name": "Send a message",
+      "webhookId": "28d12033-75ff-4641-a1f2-116387fe04e6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uF30b5Ol3UiKsBhU",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1Uit1NBuERjgS_2oJBPjbtbV0B4dd-faL",
+          "mode": "list",
+          "cachedResultName": "Test Invoices Sample",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Uit1NBuERjgS_2oJBPjbtbV0B4dd-faL"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -32
+      ],
+      "id": "2a2a5727-1e66-44ea-98f8-d92abeaf6ee1",
+      "name": "Invoice Uploaded",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "05gdO3MmsbZTDW0q",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -16,
+        -32
+      ],
+      "id": "1e431a14-9ad4-4f32-bc1f-62efeb27ef67",
+      "name": "Download invoice",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "05gdO3MmsbZTDW0q",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Invoice Uploaded": [
+      {
+        "json": {
+          "parents": [
+            "1Uit1NBuERjgS_2oJBPjbtbV0B4dd-faL"
+          ],
+          "lastModifyingUser": {
+            "displayName": "Mostafa Arafa",
+            "kind": "drive#user",
+            "me": true,
+            "permissionId": "16189979514768277808",
+            "emailAddress": "a.mostafa190@gmail.com",
+            "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocIN3sskSyUosxJnpN2A1IoReZDEtmK7o5Wv9eBqnEx0Z-BZ7yk=s64"
+          },
+          "owners": [
+            {
+              "displayName": "Mostafa Arafa",
+              "kind": "drive#user",
+              "me": true,
+              "permissionId": "16189979514768277808",
+              "emailAddress": "a.mostafa190@gmail.com",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocIN3sskSyUosxJnpN2A1IoReZDEtmK7o5Wv9eBqnEx0Z-BZ7yk=s64"
+            }
+          ],
+          "permissions": [
+            {
+              "kind": "drive#permission",
+              "id": "16189979514768277808",
+              "type": "user",
+              "emailAddress": "a.mostafa190@gmail.com",
+              "role": "owner",
+              "displayName": "Mostafa Arafa",
+              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocIN3sskSyUosxJnpN2A1IoReZDEtmK7o5Wv9eBqnEx0Z-BZ7yk=s64",
+              "deleted": false,
+              "pendingOwner": false
+            }
+          ],
+          "spaces": [
+            "drive"
+          ],
+          "capabilities": {
+            "canAcceptOwnership": false,
+            "canAddChildren": false,
+            "canAddMyDriveParent": false,
+            "canChangeCopyRequiresWriterPermission": true,
+            "canChangeItemDownloadRestriction": true,
+            "canChangeSecurityUpdateEnabled": false,
+            "canChangeViewersCanCopyContent": true,
+            "canComment": true,
+            "canCopy": true,
+            "canDelete": true,
+            "canDisableInheritedPermissions": false,
+            "canDownload": true,
+            "canEdit": true,
+            "canEnableInheritedPermissions": true,
+            "canListChildren": false,
+            "canModifyContent": true,
+            "canModifyContentRestriction": true,
+            "canModifyEditorContentRestriction": true,
+            "canModifyOwnerContentRestriction": true,
+            "canModifyLabels": false,
+            "canMoveChildrenWithinDrive": false,
+            "canMoveItemIntoTeamDrive": true,
+            "canMoveItemOutOfDrive": true,
+            "canMoveItemWithinDrive": true,
+            "canReadLabels": false,
+            "canReadRevisions": true,
+            "canRemoveChildren": false,
+            "canRemoveContentRestriction": false,
+            "canRemoveMyDriveParent": true,
+            "canRename": true,
+            "canShare": true,
+            "canTrash": true,
+            "canUntrash": true
+          },
+          "permissionIds": [
+            "16189979514768277808"
+          ],
+          "linkShareMetadata": {
+            "securityUpdateEligible": false,
+            "securityUpdateEnabled": true
+          },
+          "downloadRestrictions": {
+            "itemDownloadRestriction": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            },
+            "effectiveDownloadRestrictionWithContext": {
+              "restrictedForReaders": false,
+              "restrictedForWriters": false
+            }
+          },
+          "kind": "drive#file",
+          "id": "1vCxIWDGPJhvVc6hw0JuVycGOZGetwWzz",
+          "name": "All invoice_removed.pdf",
+          "mimeType": "application/pdf",
+          "starred": false,
+          "trashed": false,
+          "explicitlyTrashed": false,
+          "version": "3",
+          "webContentLink": "https://drive.google.com/uc?id=1vCxIWDGPJhvVc6hw0JuVycGOZGetwWzz&export=download",
+          "webViewLink": "https://drive.google.com/file/d/1vCxIWDGPJhvVc6hw0JuVycGOZGetwWzz/view?usp=drivesdk",
+          "iconLink": "https://drive-thirdparty.googleusercontent.com/16/type/application/pdf",
+          "hasThumbnail": true,
+          "thumbnailLink": "https://lh3.googleusercontent.com/drive-storage/AJQWtBMe-F8XD392zG7eSbVqo35eRMU7iMO0ZSYtimJgq7xJTfYrJ41t4u9-IAerdYh77DfWWJ310GwsO--sL_nC1IYa4ZOCPMmi39Bse_7RMjbYCw=s220",
+          "thumbnailVersion": "1",
+          "viewedByMe": true,
+          "viewedByMeTime": "2025-09-09T00:42:03.320Z",
+          "createdTime": "2025-09-09T00:42:03.320Z",
+          "modifiedTime": "2025-09-09T00:41:42.000Z",
+          "modifiedByMeTime": "2025-09-09T00:41:42.000Z",
+          "modifiedByMe": true,
+          "shared": false,
+          "ownedByMe": true,
+          "viewersCanCopyContent": true,
+          "copyRequiresWriterPermission": false,
+          "writersCanShare": true,
+          "originalFilename": "All invoice_removed.pdf",
+          "fullFileExtension": "pdf",
+          "fileExtension": "pdf",
+          "md5Checksum": "47f53b6a29f81cf45260ac8d75b2339c",
+          "sha1Checksum": "b4730bb11fb4af96542a5f1221689619178e2584",
+          "sha256Checksum": "3cc1ce5e26973bfcd2b1f62d7d241245f11f100219b365219572786c765e6d72",
+          "size": "278452",
+          "quotaBytesUsed": "278452",
+          "headRevisionId": "0BwLUCIvFh4yxZFNqS2JUUWVwTVBpTWg4Q0VWNkVnR1JXOWlRPQ",
+          "isAppAuthorized": false,
+          "inheritedPermissionsDisabled": false
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Message a model to create email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model to create email": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice Uploaded": {
+      "main": [
+        [
+          {
+            "node": "Download invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download invoice": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9c5bd558-8453-47d0-94cf-7824af4930ba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d439f3ae536d0c8dd0587c6939d88d457c04d19cc3a201f64ba2ed92a2b9a6ef"
+  },
+  "id": "P0jTjdzrF5nbqZnk",
+  "tags": [
+    {
+      "createdAt": "2025-09-17T22:20:30.271Z",
+      "updatedAt": "2025-09-17T22:20:30.271Z",
+      "id": "hftJI3b6ZK8waaYL",
+      "name": "Workflow"
+    }
+  ]
+}
