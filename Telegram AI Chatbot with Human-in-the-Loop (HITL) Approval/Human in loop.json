@@ -1,0 +1,509 @@
+{
+  "name": "Human in loop",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -544,
+        144
+      ],
+      "id": "da5755a3-bda2-4bc2-a422-f96b4997d48b",
+      "name": "Telegram Trigger",
+      "webhookId": "1d85d467-536a-4cf4-8c45-766f3ed3443b",
+      "credentials": {
+        "telegramApi": {
+          "id": "a0flYiVyAlunw2fF",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.from.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        336
+      ],
+      "id": "cd48131f-0f0d-4fac-951b-2587219181d3",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool when you need to retrieve info about Al Faysalia Crew Service.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "demo1536",
+          "mode": "list",
+          "cachedResultName": "demo1536"
+        },
+        "options": {
+          "pineconeNamespace": "FAQ Al Faysalia"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        336
+      ],
+      "id": "862cd88a-0357-4dd6-a983-1749ae1acf2d",
+      "name": "Al Faysalia FAQs",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NRf7i3iOuGhsQ6RW",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        480
+      ],
+      "id": "0b5c0d09-9ced-4523-8258-8013a42c45e7",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "hlhZnOWmlw6SLbRV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are Mostafios, a polite and professional customer support assistant working for Al Faysalia Crew Service.  \n\nYour job is to help customers by answering their questions based on the Al Faysalia FAQs knowledge base.  \n\nGuidelines for behavior:\n- Always be clear, polite, and supportive.  \n- Do not use markdown, HTML, or bold formatting. Write in plain text only.  \n- Keep responses conversational, natural, and easy to read.  \n- If the answer is not in the FAQs, politely inform the customer and suggest how they may contact support for further help.  \n- Reference the current time as needed: {{ $now }}.  \n- Stay aligned with Al Faysalia Crew Service brand voice: professional, friendly, and solution-oriented.  \n\nYour goal is to make customers feel supported, understood, and guided with accurate information.  \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        144
+      ],
+      "id": "a65861f9-9aae-4149-8b35-67e1c07a19a7",
+      "name": "Customer support"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e464c07c-3b99-4e6d-8662-0c87873e383e",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        144
+      ],
+      "id": "14628510-3230-47d2-b943-10ea6d56a75f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "=1181821734",
+        "message": "=is it good to go ?\n\nThe question: {{ $('Telegram Trigger').item.json.message.text }}\n\nThe output: {{ $json.output }}",
+        "responseType": "freeText",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        144
+      ],
+      "id": "7826e98f-35d4-4806-8a9d-59fea8944a27",
+      "name": "Feedback",
+      "webhookId": "85d2dee4-4abb-44ef-815c-007d7014736c",
+      "credentials": {
+        "telegramApi": {
+          "id": "a0flYiVyAlunw2fF",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        832,
+        352
+      ],
+      "id": "a47014b6-feca-4114-9673-1be9e280dfe9",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "24YfSHK5VAkSruOL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=the output : {{ $('Edit Fields').item.json.output }}\n\nthe modification needed: {{ $json.data.text }}",
+        "options": {
+          "systemMessage": "=## overview\n\nYou are a helpful assistant, your role is to modify the output text according to the modification needed."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        336
+      ],
+      "id": "aa97fa57-33bb-4b73-b1f5-c47631ca244e",
+      "name": "Optimizer"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $('Edit Fields').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        32
+      ],
+      "id": "0b9d877d-46f9-4ed7-9f2d-1de93702cfea",
+      "name": "Send a text message",
+      "webhookId": "ec724b05-5afe-4aa7-8d62-41ed9338c0e2",
+      "credentials": {
+        "telegramApi": {
+          "id": "a0flYiVyAlunw2fF",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "497ce87e-1302-4387-82af-15981905fe04",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e120808f-ee20-4ef6-8780-0481d6d9f8fa",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        144
+      ],
+      "id": "429144ce-d443-406b-b715-c83c784bd82a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        480
+      ],
+      "id": "f406af8f-0d8d-45e4-9082-81e32e6d5761",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "hlhZnOWmlw6SLbRV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Denial",
+              "description": "if he asked for modification or asked to try again"
+            },
+            {
+              "category": "Approval ",
+              "description": "if he didn't ask for modification"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        144
+      ],
+      "id": "2ce7d186-f740-429a-8775-367e158a2e20",
+      "name": "Check Approval"
+    },
+    {
+      "parameters": {
+        "content": "## Human in Loop",
+        "height": 304,
+        "width": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        576,
+        48
+      ],
+      "id": "d87473f6-7107-4fa3-947e-09f9bf88e58b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## New Message arrive other than /start",
+        "height": 336,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        16
+      ],
+      "id": "beba45ea-6365-4e5c-b03d-ace76803468e",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Customer support",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Al Faysalia FAQs": {
+      "ai_tool": [
+        [
+          {
+            "node": "Customer support",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Al Faysalia FAQs",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer support": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback": {
+      "main": [
+        [
+          {
+            "node": "Check Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Optimizer",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Check Approval",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Optimizer": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Customer support",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Customer support",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Approval": {
+      "main": [
+        [
+          {
+            "node": "Optimizer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "ytT2VOBjqYn6cDs7"
+  },
+  "versionId": "11eb8050-0692-4b2a-aba9-40c17536cacd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d439f3ae536d0c8dd0587c6939d88d457c04d19cc3a201f64ba2ed92a2b9a6ef"
+  },
+  "id": "6UsZpkYWPnSAsxY1",
+  "tags": []
+}
