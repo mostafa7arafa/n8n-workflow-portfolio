@@ -54,8 +54,6 @@ To run these workflows, you will need to configure the following:
 1.  **Google Gemini (PaLM) API Key:** Required for all AI nodes.
 2.  **OpenWeatherMap API Key:** Required for the `HTTP Request` and `HTTPRequest Tool` nodes to fetch weather data.
 
-**IMPORTANT:** Never commit your secret keys or credentials directly to your GitHub repository.
-
 ## 📊 Workflow Overview
 
 <img width="1597" height="382" alt="image" src="https://github.com/user-attachments/assets/51060869-f1fd-4afe-a20c-78d6f29a7d52" />
