@@ -1,0 +1,533 @@
+{
+  "name": "Ayman Chatbot",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        224
+      ],
+      "id": "55b1e4e2-f66a-4834-abf2-1fe109b4a56c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1s4yUaOzNVrMqmdd_wpAw_udlklA4WMEti_-hT7sUHjY",
+          "mode": "list",
+          "cachedResultName": "PodMedia FAQs",
+          "cachedResultUrl": "xxxxxxxxxxxxxxxxxx"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -656,
+        224
+      ],
+      "id": "912dcc94-eb1a-4dea-becf-f9087fc5f63a",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "05gdO3MmsbZTDW0q",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "ayman1podmedia",
+          "mode": "list",
+          "cachedResultName": "ayman1podmedia"
+        },
+        "options": {
+          "pineconeNamespace": "PodMedia FAQ"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        224
+      ],
+      "id": "cf8566b3-a3aa-4cb9-b9bc-5cca390ed18f",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NRf7i3iOuGhsQ6RW",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -512,
+        448
+      ],
+      "id": "6e136e91-84de-4248-ba0d-f84d3812af44",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "hlhZnOWmlw6SLbRV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        432
+      ],
+      "id": "5f3a1a4c-c867-4ed3-ac80-bed504d6c273",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "content": "## Data Upload",
+        "height": 480,
+        "width": 880
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        112
+      ],
+      "id": "0befddf3-8e2e-4f00-9e54-20e0247c5639",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Upload steps:\n\n1) download the FAQs from the drive\n2) Convert it into chunk\n3) convert the text to embeddings\n4) upload it to pinecone to convert to vector store db",
+        "height": 480,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        112
+      ],
+      "id": "1d1c120b-e00b-4fb8-b348-71006be436aa",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        112
+      ],
+      "id": "92204a8a-d20a-49b8-91c9-84f9c8a2dc77",
+      "name": "When chat message received",
+      "webhookId": "de8e834c-da97-430b-b60e-cc4430b8f43e"
+    },
+    {
+      "parameters": {
+        "tableName": "ayman_faqs_sessions",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        320
+      ],
+      "id": "d2b1e191-8b39-4a25-911d-b790145799e9",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "0xkZ7U48ViGpExDx",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        432
+      ],
+      "id": "eff48b61-5544-46d6-9288-127d851908b8",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "hlhZnOWmlw6SLbRV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool when you need an information about podmedia, the FAQs are here.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "ayman1podmedia",
+          "mode": "list",
+          "cachedResultName": "ayman1podmedia"
+        },
+        "options": {
+          "pineconeNamespace": "PodMedia FAQ"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        736,
+        320
+      ],
+      "id": "a5a24d3c-efb9-4c28-b9bf-1a084e3f433b",
+      "name": "Podmedia FAQs",
+      "credentials": {
+        "pineconeApi": {
+          "id": "NRf7i3iOuGhsQ6RW",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are **John**, the official Customer Support AI Agent for PodMedia.  \nYour role is to be a **professional yet friendly** assistant who helps customers with any questions about PodMedia and supports them with booking or managing meetings.  \n\nKnowledge Source:  \n- You are connected to a Pinecone vector database containing PodMedia’s FAQ knowledge base.  \n- Always prioritize answers from this database. If no direct match is found, provide the most relevant, professional, and friendly response based on context.  \n- If contact emails are needed (e.g., error cases), retrieve the official support emails from the knowledge base and share them with the user.  \n\nLanguage Rules:  \n- If the customer communicates in **Arabic**, reply **only in Arabic**.  \n- If the customer communicates in any other language, reply in **friendly, professional English**.  \n\nTone & Style:  \n- Friendly, approachable, and respectful.  \n- Professional but never robotic.  \n- Clear and concise, avoiding unnecessary jargon.  \n- Empathetic, supportive, and customer-focused.  \n\nCore Tasks:  \n1. **Customer Support** –  \n   - Answer questions accurately based on the FAQ knowledge base.  \n   - If unsure, provide the best possible guidance and offer escalation politely.  \n\n2. **create_direct_booking_link** –  \nDescription:\nGenerates a direct, pre-filled Calendly confirmation link for a specific time slot. This is the final step in the booking process.\n\nWhen to use:\nUse this tool only after the user has confirmed their name, their email, and has selected a specific time slot from the list of available options.\n\nuser_name (string, required): The full name of the person who is booking the meeting.\n\nuser_email (string, required): The email address of the person booking.\n\na1 (string, required): the phone number of the user he must entered it with his country code.\n\na2 (string, required): the reason of the meeting with the Podmedia team.\n\nselected_utc_time (string, required): The chosen time slot for the meeting. This MUST be the original UTC timestamp string (ending in Z) that was provided by the availability checking tool.\n\nExample: 2025-09-30T14:00:00Z\n\nOutput:\nThe tool returns a single URL string. Present this URL to the user as their final confirmation link.\n\n3. **Get Available time** –  \n   - If the customer wants to know the availble timeslots in the next 7 days for podmedia.\n\n    - make sure to use this tool before 'Create Scheduling Link' tool. \n\nNote: the returned times are in UTC, don't forget to tell the user that.\n\n4. **Error Handling** –  \n   - If any issue occurs (e.g., tool errors, missing data, system failure):  \n     • Apologize politely for the inconvenience.  \n     • Retrieve the official contact support emails from the knowledge base.  \n     • Provide them to the customer with a message like:  \n       “I’m sorry, something went wrong while processing your request. Please contact us at the following emails for further assistance: {emails_from_kb}.”  \n\nMission:  \n- Make every customer feel supported, valued, and comfortable.  \n- Provide accurate and friendly answers.  \n- Seamlessly handle meeting bookings and cancellations.  \n- Always share the **Booking Reference (lead ID)** when confirming or deleting bookings.  \n- In case of errors, guide the customer to official PodMedia support emails from the FAQ knowledge base.  \n- Maintain professionalism while being approachable and human-like.  \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        112
+      ],
+      "id": "96bbe46b-98e4-4c68-92b1-c208fb906c6c",
+      "name": "PodMedia Customer Support",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        320
+      ],
+      "id": "fb87a366-85e8-47ec-b003-dc314e827ba7",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "hlhZnOWmlw6SLbRV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Chat Bot",
+        "height": 592,
+        "width": 1104,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3c35056e-200a-461c-a54f-18e809daba21",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to get available time in Calendly meetings for PodMedia meetings in UTC timing. ",
+        "url": "https://api.calendly.com/event_type_available_times",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "xxxxxxxxxxxxxxxxxx"
+            },
+            {
+              "name": "start_time",
+              "value": "={{ $now.setZone(\"Africa/Cairo\").plus({ days: 1 }).toUTC().toISO() }}"
+            },
+            {
+              "name": "end_time",
+              "value": "={{ $now.setZone(\"Africa/Cairo\").plus({ days: 7 }).toUTC().toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        592,
+        320
+      ],
+      "id": "5eb4091b-8984-4c09-a6eb-df7a154076e9",
+      "name": "Get Available time",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1DMdmhXhqgTR49yv",
+          "name": "Calendly Access token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Generates a direct, pre-filled Calendly confirmation link for a specific time slot. This is the final step in the booking process.",
+        "workflowId": {
+          "__rl": true,
+          "value": "EWN1kKBY0ZnmYmSr",
+          "mode": "list",
+          "cachedResultName": "Book a meeting"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('user_name', ``, 'string') }}",
+            "user_email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('user_email', ``, 'string') }}",
+            "selected_utc_time": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('selected_utc_time', ``, 'string') }}",
+            "a1": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('a1', `Phone number of the client`, 'string') }}",
+            "a2": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('a2', `The reason of the meeting`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "user_email",
+              "displayName": "user_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "selected_utc_time",
+              "displayName": "selected_utc_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "a1",
+              "displayName": "a1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "a2",
+              "displayName": "a2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        320
+      ],
+      "id": "a641b770-eb92-492a-9a00-84f6cf12c971",
+      "name": "create_direct_booking_link"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "PodMedia Customer Support",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "PodMedia Customer Support",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Podmedia FAQs",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Podmedia FAQs": {
+      "ai_tool": [
+        [
+          {
+            "node": "PodMedia Customer Support",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "PodMedia Customer Support",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Available time": {
+      "ai_tool": [
+        [
+          {
+            "node": "PodMedia Customer Support",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_direct_booking_link": {
+      "ai_tool": [
+        [
+          {
+            "node": "PodMedia Customer Support",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1a8f27ba-4f88-4388-bbbb-c425ab56f988",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d439f3ae536d0c8dd0587c6939d88d457c04d19cc3a201f64ba2ed92a2b9a6ef"
+  },
+  "id": "KdoxHr4VsJuaARrN",
+  "tags": []
+}

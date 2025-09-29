@@ -1,0 +1,120 @@
+{
+  "name": "Book a meeting",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_name"
+            },
+            {
+              "name": "user_email"
+            },
+            {
+              "name": "selected_utc_time"
+            },
+            {
+              "name": "a1"
+            },
+            {
+              "name": "a2"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        272,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.calendly.com/scheduling_links",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"owner\": \"xxxxxxxxxxxxxxxxxx\",\n  \"max_event_count\": 1,\n  \"owner_type\": \"EventType\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        352
+      ],
+      "id": "614fcb66-0ffc-4a76-8aff-c353ee396c11",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1DMdmhXhqgTR49yv",
+          "name": "Calendly Access token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "acdb9f5d-f543-4754-bbfe-35bb16c8144e",
+              "name": "booking url",
+              "value": "={{ $json.resource.booking_url }}/{{ $('When Executed by Another Workflow').item.json.selected_utc_time }}?name={{ $('When Executed by Another Workflow').item.json.user_name }}&email={{ $('When Executed by Another Workflow').item.json.selected_utc_time }}&a1=&a2=",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        352
+      ],
+      "id": "84481724-506b-454c-bdd7-535eba27fa06",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "24dffb8a-f45c-4cfc-bbc1-3fcdea8581d8",
+  "meta": {
+    "instanceId": "d439f3ae536d0c8dd0587c6939d88d457c04d19cc3a201f64ba2ed92a2b9a6ef"
+  },
+  "id": "EWN1kKBY0ZnmYmSr",
+  "tags": []
+}
