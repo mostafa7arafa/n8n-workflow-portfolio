@@ -1,0 +1,232 @@
+{
+  "name": "FireCrawl",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        96
+      ],
+      "id": "f7d8dc1b-c7a0-4306-885a-d07252d04113",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "77c61943-2621-41bb-8e9b-5c0523c99c96",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -256,
+        96
+      ],
+      "id": "30f8ef60-ae41-4d9a-a308-33a03acf680a",
+      "name": "If",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v1/extract",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"urls\": [\n    \"https://quotes.toscrape.com/*\"\n  ],\n  \"prompt\": \"Extract all the quotes and their corresponding authors from the website.\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"quotes\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"text\": {\n              \"type\": \"string\"\n            },\n            \"author\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"text\",\n            \"author\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"quotes\"\n    ]\n  },\n  \"enableWebSearch\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -688,
+        96
+      ],
+      "id": "93bc0430-e186-45bc-bb51-4c0cdb739ec6",
+      "name": "Extract",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "UH1NIx3Xr0oL57KA",
+          "name": "FireCrawl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.firecrawl.dev/v2/extract/{{ $('Extract').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -464,
+        96
+      ],
+      "id": "1bc941cb-3bdc-4435-8bc0-2bed91d6acc5",
+      "name": "Get data",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "UH1NIx3Xr0oL57KA",
+          "name": "FireCrawl"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        176
+      ],
+      "id": "f6aa8871-6c67-4a4f-a278-ee91c45b710d",
+      "name": "Wait",
+      "webhookId": "9ae6b094-86e5-4661-89b5-0a27be1c98d3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "093fc8af-6c95-491b-a484-eeb164f7d717",
+              "name": "data",
+              "value": "={{ $json.data }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3406d7df-bb32-4f80-9eb6-f2833a2f5eb6",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## FireCrawl\n\nWe used firecrawl to extract the quotes from a fixed website for quotes -> https://quotes.toscrape.com\n\nTo scrap all the pages in the website we should use /* -> https://quotes.toscrape.com/*",
+        "height": 496,
+        "width": 1200,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        -64
+      ],
+      "id": "198ad662-f20c-449b-8a82-8b23e7783f6e",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "Get data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "388702ed-6049-4069-823a-f55e6800f713",
+  "meta": {
+    "instanceId": "d439f3ae536d0c8dd0587c6939d88d457c04d19cc3a201f64ba2ed92a2b9a6ef"
+  },
+  "id": "7pH7aKAmzsQjic0N",
+  "tags": [
+    {
+      "createdAt": "2025-09-17T22:20:30.271Z",
+      "updatedAt": "2025-09-17T22:20:30.271Z",
+      "id": "hftJI3b6ZK8waaYL",
+      "name": "Workflow"
+    }
+  ]
+}
